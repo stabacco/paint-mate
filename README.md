@@ -15,14 +15,14 @@ yarn dev
 
 Live site: [https://stabacco.github.io/paint-mate/](https://stabacco.github.io/paint-mate/)
 
-Pushes to `main` build the app and publish the `gh-pages` branch. The branch is already populated; GitHub will return **404** until Pages is turned on once in repo settings.
+Pushes to `main` build the app and commit the production bundle to the branch root (for Pages). Local dev keeps `index.dev.html` as the Vite entry; `yarn dev` restores it automatically.
 
-**One-time setup (repo owner only — workflows cannot do this step):**
+**One-time setup (repo owner):**
 
 1. Open [Settings → Pages](https://github.com/stabacco/paint-mate/settings/pages).
-2. Under **Build and deployment → Source**, choose **Deploy from a branch** (not GitHub Actions).
-3. Branch: **gh-pages**, folder: **/ (root)**.
-4. Click **Save**. The site usually appears within a minute or two.
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Branch: **main**, folder: **/ (root)**.
+4. Click **Save**.
 
 Later pushes to `main` update the site automatically.
 

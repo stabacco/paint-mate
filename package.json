@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "cp index.dev.html index.html",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
