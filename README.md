@@ -13,14 +13,17 @@ yarn dev
 
 ## GitHub Pages
 
-The site publishes from `main` with GitHub Actions to
-`https://stabacco.github.io/paint-mate/`.
+Live site: `https://stabacco.github.io/paint-mate/`
 
-1. Merge the app onto `main`.
-2. In the repo: **Settings → Pages → Source: GitHub Actions**.
-3. This repository is **private**. GitHub Pages on a private repo needs GitHub Pro/Team, or make the repo public.
+**One-time setup (repo owner, in the browser):**
 
-A push to `main` (or **Actions → Deploy GitHub Pages → Run workflow**) then builds and deploys.
+1. Open **Settings → Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Save. If Pages was never turned on, this step cannot be done from the workflow.
+
+Then either push to `main`, or run **Actions → Deploy GitHub Pages → Run workflow**.
+
+If a deploy fails, start a **new** workflow run. Do not re-run only the failed job — that uploads a second `github-pages` artifact and breaks deploy.
 
 ## What it does
 
