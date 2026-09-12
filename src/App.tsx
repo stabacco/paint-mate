@@ -6,7 +6,8 @@ import { MixRecipe } from './components/MixRecipe.tsx'
 import { PaletteEditor } from './components/PaletteEditor.tsx'
 import { TargetPanel } from './components/TargetPanel.tsx'
 import { Brand, Blob, ImageArea, Mark, Page, PaletteArea, RecipeArea, Studio, Tagline, Title, TopBar, TargetArea } from './components/ui.ts'
-import { defaultEnabledIds } from './color/palettes.ts'
+import { layersForRecipe, type ColourPlan } from './color/layers.ts'
+import { defaultEnabledIds, paintLookup } from './color/palettes.ts'
 import { findRecipes } from './color/solve.ts'
 import { suggestPaintsForColours } from './color/suggest.ts'
 import type { MakerFilter, Medium, Paint } from './color/types.ts'
@@ -33,6 +34,7 @@ export default function App() {
   const [customPaints, setCustomPaints] = useState<Paint[]>(INITIAL?.customPaints ?? [])
   const [maker, setMaker] = useState<MakerFilter>(INITIAL?.maker ?? 'all')
   const [matchingPalette, setMatchingPalette] = useState(false)
+  const [colourPlans, setColourPlans] = useState<ColourPlan[]>([])
   const enabledIds = enabled[medium]
   const mixIdentity = `${targetHex}|${medium}|${enabledIds.join(',')}`
   const [recipeSelection, setRecipeSelection] = useState({ key: mixIdentity, index: 0 })
@@ -41,10 +43,20 @@ export default function App() {
   }
   const selectedRecipe = recipeSelection.index
   const canPickFromScreen = typeof window !== 'undefined' && 'EyeDropper' in window
+  const paintsById = useMemo(() => paintLookup(customPaints), [customPaints])
 
   const recipes = useMemo(
     () => findRecipes(targetHex, enabledIds, medium, 3, customPaints),
     [targetHex, enabledIds, medium, customPaints],
+  )
+
+  const colourLayers = useMemo(
+    () =>
+      colourPlans.map((plan) => ({
+        hex: plan.hex,
+        layers: plan.recipe ? layersForRecipe(plan.recipe, paintsById, medium) : [],
+      })),
+    [colourPlans, medium, paintsById],
   )
 
   useEffect(() => {
@@ -54,6 +66,11 @@ export default function App() {
   function setTarget(hex: string) {
     setTargetHex(hex)
     setHexDraft(hex)
+  }
+
+  function changeMedium(next: Medium) {
+    setMedium(next)
+    setColourPlans([])
   }
 
   function togglePaint(id: string) {
@@ -94,6 +111,13 @@ export default function App() {
     try {
       const ids = suggestPaintsForColours(hexes, medium, maker, customPaints)
       if (ids.length > 0) enableIds(ids, 'replace')
+      const paletteIds = ids.length > 0 ? ids : enabledIds
+      setColourPlans(
+        hexes.map((hex) => ({
+          hex,
+          recipe: findRecipes(hex, paletteIds, medium, 1, customPaints)[0] ?? null,
+        })),
+      )
       return ids
     } finally {
       setMatchingPalette(false)
@@ -123,7 +147,7 @@ export default function App() {
             Given any colour, decompose it into a mix from the painterly pigments you actually own.
           </Tagline>
         </Brand>
-        <MediumTabs value={medium} onChange={setMedium} />
+        <MediumTabs value={medium} onChange={changeMedium} />
       </TopBar>
 
       <Studio>
@@ -152,6 +176,8 @@ export default function App() {
             onPick={setTarget}
             maker={maker}
             matching={matchingPalette}
+            colourLayers={colourLayers}
+            onResetPhoto={() => setColourPlans([])}
             onSelectPalette={selectPaletteFromPhoto}
           />
         </ImageArea>
