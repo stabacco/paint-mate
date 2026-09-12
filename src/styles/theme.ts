@@ -1,0 +1,16 @@
+export const theme = {
+  paper: '#F3EEE4',
+  paperDeep: '#E7DFD2',
+  surface: '#FFFBF4',
+  ink: '#1C1612',
+  inkMuted: '#6F655C',
+  line: '#D9D0C3',
+  accent: '#9C3B28',
+  accentSoft: '#E8C9BE',
+  navy: '#2A3F5F',
+  gold: '#C9A227',
+  fontDisplay: '"Fraunces", "Times New Roman", serif',
+  fontBody: '"Figtree", "Segoe UI", sans-serif',
+  radius: '20px',
+  shadow: '0 22px 50px rgba(48, 32, 18, 0.1)',
+}
