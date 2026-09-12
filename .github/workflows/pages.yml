@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_PAGES: true
         run: |
-          cp index.dev.html index.html
+          cp .github/vite-index.html index.html
           yarn build
       - name: Prepare Pages files
         run: |
