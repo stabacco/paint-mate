@@ -6,6 +6,8 @@ export const MAKERS = ['daniel-smith', 'winsor-newton', 'studio', 'custom'] as c
 
 export type Maker = (typeof MAKERS)[number]
 
+export type MakerFilter = Maker | 'all'
+
 export type Opacity = 'transparent' | 'semi' | 'opaque'
 
 export type Paint = {

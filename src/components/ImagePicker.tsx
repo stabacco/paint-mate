@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import styled from 'styled-components'
 import { rgbToHex } from '../color/convert.ts'
+import { extractImageColours } from '../color/extract.ts'
+import { MAKER_LABELS, type MakerFilter } from '../color/types.ts'
 import {
   Button,
   Card,
@@ -89,23 +91,49 @@ const Sample = styled.button<{ $image: string }>`
   background: center / cover no-repeat url(${({ $image }) => $image});
 `
 
+const Found = styled.section`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+`
+
+const FoundSwatch = styled.button<{ $color: string }>`
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: ${({ $color }) => $color};
+  box-shadow: inset 0 0 0 1px rgba(28, 22, 18, 0.18);
+  padding: 0;
+  touch-action: manipulation;
+`
+
+type ImageLayout = { x: number; y: number; width: number; height: number }
+
 type ImagePickerProps = {
   onPick: (hex: string) => void
+  maker: MakerFilter
+  matching?: boolean
+  onSelectPalette: (hexes: string[]) => Promise<string[]> | string[]
 }
 
-export function ImagePicker({ onPick }: ImagePickerProps) {
+export function ImagePicker({ onPick, maker, matching = false, onSelectPalette }: ImagePickerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const frameRef = useRef<HTMLElement>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const pickingRef = useRef(false)
   const lastColorRef = useRef<string | null>(null)
+  const layoutRef = useRef<ImageLayout | null>(null)
   const scrollLockY = useRef(0)
   const [url, setUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hover, setHover] = useState<{ x: number; y: number; color: string } | null>(null)
   const [hasImage, setHasImage] = useState(false)
+  const [foundHexes, setFoundHexes] = useState<string[]>([])
+  const [matchedCount, setMatchedCount] = useState<number | null>(null)
 
   useEffect(() => {
     const onResize = () => {
@@ -152,6 +180,7 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
     const x = (rect.width - width) / 2
     const y = (rect.height - height) / 2
     ctx.drawImage(image, x, y, width, height)
+    layoutRef.current = { x, y, width, height }
   }
 
   function sampleAt(clientX: number, clientY: number): string | null {
@@ -195,11 +224,45 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
       imageRef.current = image
       drawImage(image)
       setHasImage(true)
+      setFoundHexes([])
+      setMatchedCount(null)
       if (fromUser) setUrl(trimmed)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not load that image.')
     } finally {
       setBusy(false)
+    }
+  }
+
+  function coloursFromPhoto(): string[] {
+    const canvas = canvasRef.current
+    const layout = layoutRef.current
+    if (!canvas || !layout || !imageRef.current) return []
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return []
+    const dpr = window.devicePixelRatio || 1
+    const data = ctx.getImageData(
+      Math.max(0, Math.round(layout.x * dpr)),
+      Math.max(0, Math.round(layout.y * dpr)),
+      Math.max(1, Math.round(layout.width * dpr)),
+      Math.max(1, Math.round(layout.height * dpr)),
+    )
+    return extractImageColours(data.data, { count: 12 })
+  }
+
+  async function selectPaletteFromPhoto() {
+    const hexes = coloursFromPhoto()
+    setFoundHexes(hexes)
+    setMatchedCount(null)
+    if (hexes.length === 0) {
+      setError('Could not read colours from that image.')
+      return
+    }
+    setError(null)
+    const ids = await onSelectPalette(hexes)
+    setMatchedCount(ids.length)
+    if (ids.length === 0) {
+      setError('Could not match those colours to tubes from this maker.')
     }
   }
 
@@ -322,6 +385,45 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
         {hasImage ? null : <Empty>Load a photo, then tap to sample a colour.</Empty>}
         {hover ? <Loupe $x={hover.x} $y={hover.y} $color={hover.color} /> : null}
       </Frame>
+      <Row>
+        <Button
+          type="button"
+          onClick={() => void selectPaletteFromPhoto()}
+          disabled={!hasImage || matching}
+        >
+          {matching
+            ? 'Matching tubes…'
+            : maker === 'all'
+              ? 'Select palette from this photo'
+              : `Select ${MAKER_LABELS[maker]} palette from this photo`}
+        </Button>
+      </Row>
+      {foundHexes.length > 0 ? (
+        <Found>
+          <Note>Colours in the photo</Note>
+          {foundHexes.map((hex) => (
+            <FoundSwatch
+              key={hex}
+              type="button"
+              $color={hex}
+              title={hex}
+              aria-label={`Use ${hex} as the target colour`}
+              onClick={() => onPick(hex)}
+            />
+          ))}
+        </Found>
+      ) : (
+        <Note>
+          After a photo is loaded, this chooses the {maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]}{' '}
+          tubes needed to mix the colours in it.
+        </Note>
+      )}
+      {matchedCount != null && matchedCount > 0 ? (
+        <Note>
+          Turned on {matchedCount} {maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]} tube
+          {matchedCount === 1 ? '' : 's'} in the palette below.
+        </Note>
+      ) : null}
     </Card>
   )
 }

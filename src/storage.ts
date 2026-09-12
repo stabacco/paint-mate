@@ -1,4 +1,4 @@
-import type { Medium, Paint } from './color/types.ts'
+import type { MakerFilter, Medium, Paint } from './color/types.ts'
 
 const STORAGE_KEY = 'paint-mate.v2'
 const LEGACY_KEY = 'paint-mate.v1'
@@ -8,6 +8,7 @@ export type PersistedState = {
   targetHex: string
   enabled: Partial<Record<Medium, string[]>>
   customPaints: Paint[]
+  maker: MakerFilter
 }
 
 export function loadState(): PersistedState | null {
@@ -21,6 +22,7 @@ export function loadState(): PersistedState | null {
       targetHex: parsed.targetHex,
       enabled: parsed.enabled ?? {},
       customPaints: Array.isArray(parsed.customPaints) ? parsed.customPaints : [],
+      maker: parsed.maker ?? 'all',
     }
   } catch {
     return null

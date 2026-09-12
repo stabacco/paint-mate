@@ -11,6 +11,7 @@ import {
   MAKER_SHOPS,
   MAKERS,
   type Maker,
+  type MakerFilter,
   type Medium,
   type Paint,
 } from '../color/types.ts'
@@ -103,6 +104,8 @@ type PaletteEditorProps = {
   enabledIds: string[]
   customPaints: Paint[]
   targetHex: string
+  maker: MakerFilter
+  onMakerChange: (maker: MakerFilter) => void
   onToggle: (id: string) => void
   onEnableIds: (ids: string[], mode: 'add' | 'replace') => void
   onReset: () => void
@@ -115,13 +118,14 @@ export function PaletteEditor({
   enabledIds,
   customPaints,
   targetHex,
+  maker,
+  onMakerChange,
   onToggle,
   onEnableIds,
   onReset,
   onAddCustom,
   onRemoveCustom,
 }: PaletteEditorProps) {
-  const [maker, setMaker] = useState<Maker | 'all'>('all')
   const [query, setQuery] = useState('')
   const [adding, setAdding] = useState(false)
   const [draftName, setDraftName] = useState('')
@@ -162,7 +166,7 @@ export function PaletteEditor({
     setDraftName('')
     setDraftPigment('')
     setAdding(false)
-    setMaker('custom')
+    onMakerChange('custom')
   }
 
   return (
@@ -178,11 +182,11 @@ export function PaletteEditor({
         .
       </Note>
       <Row>
-        <Chip type="button" $active={maker === 'all'} onClick={() => setMaker('all')}>
+        <Chip type="button" $active={maker === 'all'} onClick={() => onMakerChange('all')}>
           All makers
         </Chip>
         {MAKERS.map((id) => (
-          <Chip key={id} type="button" $active={maker === id} onClick={() => setMaker(id)}>
+          <Chip key={id} type="button" $active={maker === id} onClick={() => onMakerChange(id)}>
             {MAKER_LABELS[id]}
           </Chip>
         ))}

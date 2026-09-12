@@ -8,7 +8,8 @@ import { TargetPanel } from './components/TargetPanel.tsx'
 import { Brand, Blob, ImageArea, Mark, Page, PaletteArea, RecipeArea, Studio, Tagline, Title, TopBar, TargetArea } from './components/ui.ts'
 import { defaultEnabledIds } from './color/palettes.ts'
 import { findRecipes } from './color/solve.ts'
-import type { Medium, Paint } from './color/types.ts'
+import { suggestPaintsForColours } from './color/suggest.ts'
+import type { MakerFilter, Medium, Paint } from './color/types.ts'
 import { loadState, saveState } from './storage.ts'
 
 const Foot = styled.footer`
@@ -30,6 +31,8 @@ export default function App() {
     oil: INITIAL?.enabled?.oil ?? defaultEnabledIds('oil'),
   }))
   const [customPaints, setCustomPaints] = useState<Paint[]>(INITIAL?.customPaints ?? [])
+  const [maker, setMaker] = useState<MakerFilter>(INITIAL?.maker ?? 'all')
+  const [matchingPalette, setMatchingPalette] = useState(false)
   const enabledIds = enabled[medium]
   const mixIdentity = `${targetHex}|${medium}|${enabledIds.join(',')}`
   const [recipeSelection, setRecipeSelection] = useState({ key: mixIdentity, index: 0 })
@@ -45,8 +48,8 @@ export default function App() {
   )
 
   useEffect(() => {
-    saveState({ medium, targetHex, enabled, customPaints })
-  }, [medium, targetHex, enabled, customPaints])
+    saveState({ medium, targetHex, enabled, customPaints, maker })
+  }, [medium, targetHex, enabled, customPaints, maker])
 
   function setTarget(hex: string) {
     setTargetHex(hex)
@@ -83,6 +86,18 @@ export default function App() {
       ...current,
       [medium]: current[medium].filter((item) => item !== id),
     }))
+  }
+
+  async function selectPaletteFromPhoto(hexes: string[]) {
+    setMatchingPalette(true)
+    await new Promise((resolve) => window.setTimeout(resolve, 24))
+    try {
+      const ids = suggestPaintsForColours(hexes, medium, maker, customPaints)
+      if (ids.length > 0) enableIds(ids, 'replace')
+      return ids
+    } finally {
+      setMatchingPalette(false)
+    }
   }
 
   async function pickFromScreen() {
@@ -133,7 +148,12 @@ export default function App() {
           />
         </RecipeArea>
         <ImageArea>
-          <ImagePicker onPick={setTarget} />
+          <ImagePicker
+            onPick={setTarget}
+            maker={maker}
+            matching={matchingPalette}
+            onSelectPalette={selectPaletteFromPhoto}
+          />
         </ImageArea>
         <PaletteArea>
           <PaletteEditor
@@ -141,6 +161,8 @@ export default function App() {
             enabledIds={enabledIds}
             customPaints={customPaints}
             targetHex={targetHex}
+            maker={maker}
+            onMakerChange={setMaker}
             onToggle={togglePaint}
             onEnableIds={enableIds}
             onReset={() =>
