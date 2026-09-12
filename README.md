@@ -11,7 +11,16 @@ yarn
 yarn dev
 ```
 
-To try it on a phone, the repo can publish to GitHub Pages from `main` (Settings → Pages → GitHub Actions). While developing, the Vite server accepts tunneled hosts so you can open a public HTTPS URL on the device.
+## GitHub Pages
+
+The site publishes from `main` with GitHub Actions to
+`https://stabacco.github.io/paint-mate/`.
+
+1. Merge the app onto `main`.
+2. In the repo: **Settings → Pages → Source: GitHub Actions**.
+3. This repository is **private**. GitHub Pages on a private repo needs GitHub Pro/Team, or make the repo public.
+
+A push to `main` (or **Actions → Deploy GitHub Pages → Run workflow**) then builds and deploys.
 
 ## What it does
 

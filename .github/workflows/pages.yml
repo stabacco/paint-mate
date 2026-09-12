@@ -29,6 +29,10 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn test
       - run: yarn build
+      - name: Prepare Pages files
+        run: |
+          cp dist/index.html dist/404.html
+          touch dist/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
