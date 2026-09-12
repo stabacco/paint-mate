@@ -15,7 +15,7 @@ yarn dev
 
 Live site: [https://stabacco.github.io/paint-mate/](https://stabacco.github.io/paint-mate/)
 
-Pushes to `main` build the app and commit the production bundle to the branch root (for Pages). Local dev keeps `index.dev.html` as the Vite entry; `yarn dev` restores it automatically.
+Pushes to `main` rebuild the production files at the branch root (what GitHub Pages serves). `index.html` on `main` must stay the Vite production bundle — not the local `/src/main.tsx` entry. `yarn dev` copies `index.dev.html` over it locally.
 
 **One-time setup (repo owner):**
 
