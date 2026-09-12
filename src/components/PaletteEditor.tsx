@@ -5,7 +5,7 @@ import { Button, Card, CardTitle, Eyebrow, Note, Row } from './ui.ts'
 
 const Grid = styled.section`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7.4rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(6.6rem, 1fr));
   gap: 0.55rem;
 `
 
@@ -13,6 +13,7 @@ const Pan = styled.button<{ $color: string; $on: boolean }>`
   appearance: none;
   border: 1px solid ${({ theme, $on }) => ($on ? theme.ink : theme.line)};
   border-radius: 16px;
+  min-height: 6.4rem;
   padding: 0.55rem;
   background: ${({ theme }) => theme.paper};
   display: grid;
@@ -20,6 +21,7 @@ const Pan = styled.button<{ $color: string; $on: boolean }>`
   justify-items: stretch;
   opacity: ${({ $on }) => ($on ? 1 : 0.46)};
   text-align: left;
+  touch-action: manipulation;
 `
 
 const Well = styled.i<{ $color: string }>`

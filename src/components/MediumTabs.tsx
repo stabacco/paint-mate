@@ -19,8 +19,10 @@ const Tab = styled.button<{ $active: boolean }>`
   background: ${({ theme, $active }) => ($active ? theme.ink : 'transparent')};
   color: ${({ theme, $active }) => ($active ? theme.paper : theme.inkMuted)};
   border-radius: 999px;
+  min-height: 2.75rem;
   padding: 0.55rem 0.9rem;
   font-weight: 600;
+  touch-action: manipulation;
   box-shadow: ${({ $active }) => ($active ? 'inset 0 0 0 1px rgba(255,255,255,0.12)' : 'none')};
 `
 

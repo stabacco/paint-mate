@@ -5,15 +5,11 @@ import { MediumTabs } from './components/MediumTabs.tsx'
 import { MixRecipe } from './components/MixRecipe.tsx'
 import { PaletteEditor } from './components/PaletteEditor.tsx'
 import { TargetPanel } from './components/TargetPanel.tsx'
-import { Brand, Blob, Grid, Mark, Page, Stack, Tagline, Title, TopBar } from './components/ui.ts'
+import { Brand, Blob, ImageArea, Mark, Page, PaletteArea, RecipeArea, Studio, Tagline, Title, TopBar, TargetArea } from './components/ui.ts'
 import { defaultEnabledIds, paintsForMedium } from './color/palettes.ts'
 import { findRecipes } from './color/solve.ts'
 import type { Medium } from './color/types.ts'
 import { loadState, saveState } from './storage.ts'
-
-const PaletteBlock = styled.section`
-  margin-top: 1rem;
-`
 
 const Foot = styled.footer`
   margin-top: 1.4rem;
@@ -90,8 +86,8 @@ export default function App() {
         <MediumTabs value={medium} onChange={setMedium} />
       </TopBar>
 
-      <Grid>
-        <Stack>
+      <Studio>
+        <TargetArea>
           <TargetPanel
             hex={targetHex}
             hexDraft={hexDraft}
@@ -100,33 +96,36 @@ export default function App() {
             canPickFromScreen={canPickFromScreen}
             onPickFromScreen={() => void pickFromScreen()}
           />
+        </TargetArea>
+        <RecipeArea>
+          <MixRecipe
+            targetHex={targetHex}
+            medium={medium}
+            recipes={recipes}
+            selected={selectedRecipe}
+            onSelect={(index) => setRecipeSelection({ key: mixIdentity, index })}
+          />
+        </RecipeArea>
+        <ImageArea>
           <ImagePicker onPick={setTarget} />
-        </Stack>
-        <MixRecipe
-          targetHex={targetHex}
-          medium={medium}
-          recipes={recipes}
-          selected={selectedRecipe}
-          onSelect={(index) => setRecipeSelection({ key: mixIdentity, index })}
-        />
-      </Grid>
-
-      <PaletteBlock>
-        <PaletteEditor
-          medium={medium}
-          enabledIds={enabledIds}
-          onToggle={togglePaint}
-          onReset={() =>
-            setEnabled((current) => ({ ...current, [medium]: defaultEnabledIds(medium) }))
-          }
-          onAll={() =>
-            setEnabled((current) => ({
-              ...current,
-              [medium]: paintsForMedium(medium).map((paint) => paint.id),
-            }))
-          }
-        />
-      </PaletteBlock>
+        </ImageArea>
+        <PaletteArea>
+          <PaletteEditor
+            medium={medium}
+            enabledIds={enabledIds}
+            onToggle={togglePaint}
+            onReset={() =>
+              setEnabled((current) => ({ ...current, [medium]: defaultEnabledIds(medium) }))
+            }
+            onAll={() =>
+              setEnabled((current) => ({
+                ...current,
+                [medium]: paintsForMedium(medium).map((paint) => paint.id),
+              }))
+            }
+          />
+        </PaletteArea>
+      </Studio>
 
       <Foot>
         Mixes are subtractive estimates (Kubelka–Munk on reconstructed reflectance). Tube brands,

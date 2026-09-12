@@ -1,0 +1,16 @@
+{
+  "name": "Paint Mate",
+  "short_name": "Paint Mate",
+  "description": "Decompose any colour into a painterly mix from the paints on your palette.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F3EEE4",
+  "theme_color": "#F3EEE4",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

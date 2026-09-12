@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const Page = styled.main`
   width: min(1180px, calc(100% - 1.5rem));
   margin: 0 auto;
-  padding: 1.25rem 0 4rem;
+  padding: calc(1.25rem + env(safe-area-inset-top)) 0 calc(4rem + env(safe-area-inset-bottom));
 
   @media (min-width: 840px) {
     width: min(1180px, calc(100% - 3rem));
@@ -60,14 +60,44 @@ export const Tagline = styled.p`
   font-size: 0.98rem;
 `
 
-export const Grid = styled.section`
+export const Studio = styled.section`
   display: grid;
   gap: 1rem;
+  grid-template-areas:
+    'target'
+    'recipe'
+    'image'
+    'palette';
 
   @media (min-width: 920px) {
     grid-template-columns: 1.05fr 0.95fr;
+    grid-template-areas:
+      'target recipe'
+      'image recipe'
+      'palette palette';
     align-items: start;
   }
+`
+
+export const TargetArea = styled.section`
+  grid-area: target;
+`
+
+export const RecipeArea = styled.section`
+  grid-area: recipe;
+
+  @media (min-width: 920px) {
+    position: sticky;
+    top: 0.75rem;
+  }
+`
+
+export const ImageArea = styled.section`
+  grid-area: image;
+`
+
+export const PaletteArea = styled.section`
+  grid-area: palette;
 `
 
 export const Card = styled.section`
@@ -123,8 +153,12 @@ export const TextInput = styled.input`
   background: ${({ theme }) => theme.paper};
   color: ${({ theme }) => theme.ink};
   border-radius: 12px;
-  padding: 0.7rem 0.8rem;
+  padding: 0.75rem 0.8rem;
   outline: none;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 
   &:focus {
     border-color: ${({ theme }) => theme.navy};
@@ -140,9 +174,11 @@ export const Button = styled.button<{ $variant?: 'solid' | 'ghost' | 'tiny' }>`
   color: ${({ theme, $variant }) =>
     $variant === 'ghost' || $variant === 'tiny' ? theme.ink : '#F7F1E8'};
   border-radius: 999px;
-  padding: ${({ $variant }) => ($variant === 'tiny' ? '0.35rem 0.7rem' : '0.62rem 0.95rem')};
-  font-size: ${({ $variant }) => ($variant === 'tiny' ? '0.78rem' : '0.92rem')};
+  min-height: ${({ $variant }) => ($variant === 'tiny' ? '2.4rem' : '2.75rem')};
+  padding: ${({ $variant }) => ($variant === 'tiny' ? '0.4rem 0.8rem' : '0.62rem 0.95rem')};
+  font-size: ${({ $variant }) => ($variant === 'tiny' ? '0.86rem' : '0.95rem')};
   font-weight: 600;
+  touch-action: manipulation;
 
   &:hover {
     transform: translateY(-1px);

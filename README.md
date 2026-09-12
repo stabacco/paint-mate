@@ -11,6 +11,8 @@ yarn
 yarn dev
 ```
 
+To try it on a phone, the repo can publish to GitHub Pages from `main` (Settings → Pages → GitHub Actions). While developing, the Vite server accepts tunneled hosts so you can open a public HTTPS URL on the device.
+
 ## What it does
 
 - **Target a colour** with hex, a colour picker, the optional screen eyedropper, or a photo

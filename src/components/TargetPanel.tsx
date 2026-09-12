@@ -5,7 +5,7 @@ import { Button, Card, CardTitle, Eyebrow, Field, Row, TextInput } from './ui.ts
 
 const Well = styled.button<{ $color: string }>`
   width: 100%;
-  min-height: 9.5rem;
+  min-height: 7.2rem;
   border: 0;
   border-radius: 18px;
   background:
@@ -19,6 +19,11 @@ const Well = styled.button<{ $color: string }>`
   padding: 1rem;
   text-align: left;
   box-shadow: inset 0 0 0 1px rgba(28, 22, 18, 0.12);
+  touch-action: manipulation;
+
+  @media (min-width: 840px) {
+    min-height: 9.5rem;
+  }
 
   strong {
     font-family: ${({ theme }) => theme.fontDisplay};
@@ -28,8 +33,8 @@ const Well = styled.button<{ $color: string }>`
 `
 
 const Native = styled.input`
-  width: 3rem;
-  height: 2.6rem;
+  width: 3.25rem;
+  height: 2.75rem;
   padding: 0;
   border: 1px solid ${({ theme }) => theme.line};
   border-radius: 10px;

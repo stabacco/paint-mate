@@ -26,12 +26,14 @@ export const GlobalStyle = createGlobalStyle`
     color: ${({ theme }) => theme.ink};
     font-family: ${({ theme }) => theme.fontBody};
     line-height: 1.45;
+    -webkit-text-size-adjust: 100%;
   }
 
   button,
   input,
   textarea {
     font: inherit;
+    touch-action: manipulation;
   }
 
   button {

@@ -39,10 +39,14 @@ const Frame = styled.section`
 
 const Stage = styled.canvas`
   width: 100%;
-  height: min(52vw, 360px);
+  height: min(48vw, 280px);
   display: block;
   touch-action: none;
   cursor: crosshair;
+
+  @media (min-width: 840px) {
+    height: min(52vw, 360px);
+  }
 `
 
 const Empty = styled.p`
