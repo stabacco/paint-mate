@@ -1,11 +1,9 @@
 import styled from 'styled-components'
 import { contrastInk } from '../color/convert.ts'
-import { layersForRecipe } from '../color/layers.ts'
 import { describeWash, toPartsRatio, toPercents } from '../color/mix.ts'
 import { paintLookup } from '../color/palettes.ts'
 import { hueHint, matchQuality } from '../color/solve.ts'
 import { MAKER_LABELS, type Medium, type Paint, type Recipe } from '../color/types.ts'
-import { PaintLayers } from './PaintLayers.tsx'
 import { Button, Card, CardTitle, Eyebrow, Note, Row } from './ui.ts'
 
 const Compare = styled.section`
@@ -86,20 +84,6 @@ const Amount = styled.strong`
   font-size: 1.35rem;
 `
 
-const LayerBlock = styled.section`
-  display: grid;
-  gap: 0.55rem;
-  margin: 0 0 1rem;
-  padding: 0.85rem;
-  border: 1px solid ${({ theme }) => theme.line};
-  border-radius: 16px;
-  background: ${({ theme }) => theme.paper};
-`
-
-const LayerTitle = styled.strong`
-  font-size: 0.92rem;
-`
-
 const Alt = styled.button<{ $active: boolean }>`
   display: flex;
   gap: 0.2rem;
@@ -157,18 +141,9 @@ export function MixRecipe({
   const ratio = toPartsRatio(percents)
   const quality = matchQuality(recipe.deltaE)
   const wash = medium === 'watercolour' ? describeWash(recipe.water) : null
-  const layers = layersForRecipe(recipe, lookup, medium)
-  const copy = [
-    recipe.parts
-      .map((part, index) => `${percents[index]}% ${lookup.get(part.paintId)?.name ?? part.paintId}`)
-      .join(', '),
-    layers
-      .filter((layer) => layer.kind !== 'ground')
-      .map((layer, index) => `${index + 1}. ${layer.instruction}`)
-      .join(' '),
-  ]
-    .filter(Boolean)
-    .join(' — ')
+  const copy = recipe.parts
+    .map((part, index) => `${percents[index]}% ${lookup.get(part.paintId)?.name ?? part.paintId}`)
+    .join(', ')
 
   return (
     <Card>
@@ -207,15 +182,7 @@ export function MixRecipe({
           )
         })}
       </MixList>
-      <LayerBlock>
-        <LayerTitle>Layers to lay down</LayerTitle>
-        <Note>
-          Mix on the palette, or paint these as successive layers — first layer at the bottom of
-          the stack.
-        </Note>
-        <PaintLayers layers={layers} />
-      </LayerBlock>
-      {wash ? <Note>The whole mix can also be thinned to {wash}.</Note> : null}
+      {wash ? <Note>Lay it as {wash} so the paper helps lift the value.</Note> : null}
       <Row>
         <Button
           type="button"

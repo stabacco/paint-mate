@@ -2,9 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import styled from 'styled-components'
 import { rgbToHex } from '../color/convert.ts'
 import { extractImageColours } from '../color/extract.ts'
-import type { PaintLayer } from '../color/layers.ts'
 import { MAKER_LABELS, type MakerFilter } from '../color/types.ts'
-import { PaintLayers } from './PaintLayers.tsx'
 import {
   Button,
   Card,
@@ -111,67 +109,16 @@ const FoundSwatch = styled.button<{ $color: string }>`
   touch-action: manipulation;
 `
 
-const LayerGuide = styled.section`
-  display: grid;
-  gap: 0.55rem;
-`
-
-const Board = styled.section`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10.5rem, 1fr));
-  gap: 0.65rem;
-`
-
-const ColourCard = styled.button`
-  appearance: none;
-  border: 1px solid ${({ theme }) => theme.line};
-  border-radius: 16px;
-  background: ${({ theme }) => theme.paper};
-  padding: 0.55rem;
-  display: grid;
-  gap: 0.45rem;
-  text-align: left;
-  touch-action: manipulation;
-`
-
-const Goal = styled.i<{ $color: string }>`
-  display: block;
-  height: 0.7rem;
-  border-radius: 999px;
-  background: ${({ $color }) => $color};
-  box-shadow: inset 0 0 0 1px rgba(28, 22, 18, 0.12);
-`
-
-const GoalHex = styled.small`
-  color: ${({ theme }) => theme.inkMuted};
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-`
-
 type ImageLayout = { x: number; y: number; width: number; height: number }
-
-export type PhotoColourLayers = {
-  hex: string
-  layers: PaintLayer[]
-}
 
 type ImagePickerProps = {
   onPick: (hex: string) => void
   maker: MakerFilter
   matching?: boolean
-  colourLayers?: PhotoColourLayers[]
-  onResetPhoto?: () => void
   onSelectPalette: (hexes: string[]) => Promise<string[]> | string[]
 }
 
-export function ImagePicker({
-  onPick,
-  maker,
-  matching = false,
-  colourLayers = [],
-  onResetPhoto,
-  onSelectPalette,
-}: ImagePickerProps) {
+export function ImagePicker({ onPick, maker, matching = false, onSelectPalette }: ImagePickerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const frameRef = useRef<HTMLElement>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
@@ -279,7 +226,6 @@ export function ImagePicker({
       setHasImage(true)
       setFoundHexes([])
       setMatchedCount(null)
-      onResetPhoto?.()
       if (fromUser) setUrl(trimmed)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not load that image.')
@@ -478,29 +424,6 @@ export function ImagePicker({
             />
           ))}
         </Found>
-      ) : null}
-      {colourLayers.length > 0 ? (
-        <LayerGuide>
-          <Note>Layers to lay down for each colour in the photo. Tap a card to mix that target.</Note>
-          <Board>
-            {colourLayers.map((item) => (
-              <ColourCard
-                key={item.hex}
-                type="button"
-                onClick={() => onPick(item.hex)}
-                aria-label={`Use ${item.hex} as the target colour`}
-              >
-                <Goal $color={item.hex} />
-                <GoalHex>{item.hex}</GoalHex>
-                {item.layers.length > 0 ? (
-                  <PaintLayers layers={item.layers} compact />
-                ) : (
-                  <Note>No mix for this colour with the current tubes.</Note>
-                )}
-              </ColourCard>
-            ))}
-          </Board>
-        </LayerGuide>
       ) : null}
     </Card>
   )
