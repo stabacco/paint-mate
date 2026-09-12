@@ -13,16 +13,16 @@ yarn dev
 
 ## GitHub Pages
 
-Live site: `https://stabacco.github.io/paint-mate/`
+Live site: [https://stabacco.github.io/paint-mate/](https://stabacco.github.io/paint-mate/)
 
-Pushes to `main` build the app and publish the `gh-pages` branch.
+Pushes to `main` build the app and publish the `gh-pages` branch. The branch is already populated; GitHub will return **404** until Pages is turned on once in repo settings.
 
-**One-time setup (repo owner):**
+**One-time setup (repo owner only — workflows cannot do this step):**
 
-1. Wait for the first green **Deploy GitHub Pages** run on `main` (it creates the `gh-pages` branch).
-2. Open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Branch **gh-pages**, folder **/ (root)**. Save.
+1. Open [Settings → Pages](https://github.com/stabacco/paint-mate/settings/pages).
+2. Under **Build and deployment → Source**, choose **Deploy from a branch** (not GitHub Actions).
+3. Branch: **gh-pages**, folder: **/ (root)**.
+4. Click **Save**. The site usually appears within a minute or two.
 
 Later pushes to `main` update the site automatically.
 
