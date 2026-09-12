@@ -35,6 +35,10 @@ const Frame = styled.section`
   border-radius: 16px;
   background: #221c18;
   min-height: 220px;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
 `
 
 const Stage = styled.canvas`
@@ -43,6 +47,8 @@ const Stage = styled.canvas`
   display: block;
   touch-action: none;
   cursor: crosshair;
+  -webkit-user-select: none;
+  user-select: none;
 
   @media (min-width: 840px) {
     height: min(52vw, 360px);
@@ -89,8 +95,12 @@ type ImagePickerProps = {
 
 export function ImagePicker({ onPick }: ImagePickerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const frameRef = useRef<HTMLElement>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const pickingRef = useRef(false)
+  const lastColorRef = useRef<string | null>(null)
+  const scrollLockY = useRef(0)
   const [url, setUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -104,6 +114,25 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  useEffect(() => {
+    const nodes = [canvasRef.current, frameRef.current].filter(
+      (node): node is HTMLElement => Boolean(node),
+    )
+    const blockScroll = (event: TouchEvent) => {
+      event.preventDefault()
+    }
+    for (const node of nodes) {
+      node.addEventListener('touchstart', blockScroll, { passive: false })
+      node.addEventListener('touchmove', blockScroll, { passive: false })
+    }
+    return () => {
+      for (const node of nodes) {
+        node.removeEventListener('touchstart', blockScroll)
+        node.removeEventListener('touchmove', blockScroll)
+      }
+    }
+  }, [hasImage])
 
   function drawImage(image: HTMLImageElement) {
     const canvas = canvasRef.current
@@ -174,16 +203,62 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
     }
   }
 
-  function handlePointer(event: PointerEvent<HTMLCanvasElement>, commit: boolean) {
-    const color = sampleAt(event.clientX, event.clientY)
+  function previewAt(clientX: number, clientY: number, canvas: HTMLCanvasElement) {
+    if (!imageRef.current) return
+    const color = sampleAt(clientX, clientY)
     if (!color) return
-    const rect = event.currentTarget.getBoundingClientRect()
+    lastColorRef.current = color
+    const rect = canvas.getBoundingClientRect()
     setHover({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
+      x: clientX - rect.left,
+      y: clientY - rect.top,
       color,
     })
-    if (commit) onPick(color)
+  }
+
+  function lockPageScroll() {
+    scrollLockY.current = window.scrollY
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overscrollBehavior = 'none'
+  }
+
+  function unlockPageScroll() {
+    document.body.style.overflow = ''
+    document.documentElement.style.overscrollBehavior = ''
+    window.scrollTo(0, scrollLockY.current)
+  }
+
+  function beginPick(event: PointerEvent<HTMLCanvasElement>) {
+    event.preventDefault()
+    pickingRef.current = true
+    event.currentTarget.setPointerCapture(event.pointerId)
+    lockPageScroll()
+    previewAt(event.clientX, event.clientY, event.currentTarget)
+  }
+
+  function movePick(event: PointerEvent<HTMLCanvasElement>) {
+    if (!pickingRef.current) {
+      if (event.pointerType === 'mouse') {
+        previewAt(event.clientX, event.clientY, event.currentTarget)
+      }
+      return
+    }
+    event.preventDefault()
+    previewAt(event.clientX, event.clientY, event.currentTarget)
+  }
+
+  function endPick(event: PointerEvent<HTMLCanvasElement>) {
+    if (!pickingRef.current) return
+    event.preventDefault()
+    previewAt(event.clientX, event.clientY, event.currentTarget)
+    const color = lastColorRef.current
+    pickingRef.current = false
+    unlockPageScroll()
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+    setHover(null)
+    if (color) onPick(color)
   }
 
   return (
@@ -233,15 +308,16 @@ export function ImagePicker({ onPick }: ImagePickerProps) {
         ))}
       </Row>
       {error ? <ErrorText>{error}</ErrorText> : null}
-      <Frame>
+      <Frame ref={frameRef}>
         <Stage
           ref={canvasRef}
-          onPointerDown={(event) => {
-            event.currentTarget.setPointerCapture(event.pointerId)
-            handlePointer(event, true)
+          onPointerDown={beginPick}
+          onPointerMove={movePick}
+          onPointerUp={endPick}
+          onPointerCancel={endPick}
+          onPointerLeave={() => {
+            if (!pickingRef.current) setHover(null)
           }}
-          onPointerMove={(event) => handlePointer(event, event.buttons === 1)}
-          onPointerLeave={() => setHover(null)}
         />
         {hasImage ? null : <Empty>Load a photo, then tap to sample a colour.</Empty>}
         {hover ? <Loupe $x={hover.x} $y={hover.y} $color={hover.color} /> : null}

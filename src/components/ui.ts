@@ -85,6 +85,7 @@ export const TargetArea = styled.section`
 
 export const RecipeArea = styled.section`
   grid-area: recipe;
+  overflow-anchor: none;
 
   @media (min-width: 920px) {
     position: sticky;
@@ -94,6 +95,7 @@ export const RecipeArea = styled.section`
 
 export const ImageArea = styled.section`
   grid-area: image;
+  overflow-anchor: none;
 `
 
 export const PaletteArea = styled.section`
