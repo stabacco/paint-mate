@@ -14,6 +14,7 @@ function scattering(opacity: Opacity): number {
 }
 
 function expand(maker: Maker, rows: readonly Row[]): Paint[] {
+  const fallback = maker === 'daniel-smith' || maker === 'winsor-newton' ? ALL : WC
   return rows.map(([id, name, pigment, hex, opacity, mediums]) => ({
     id,
     name,
@@ -21,7 +22,7 @@ function expand(maker: Maker, rows: readonly Row[]): Paint[] {
     hex,
     opacity,
     scattering: scattering(opacity),
-    mediums: mediums ?? WC,
+    mediums: mediums ?? fallback,
     maker,
   }))
 }
@@ -59,7 +60,7 @@ const STUDIO: Row[] = [
 const DANIEL_SMITH: Row[] = [
   ['ds-buff-titanium', 'Buff Titanium', 'PW6', '#E8D9C0', 'opaque'],
   ['ds-hansa-yellow-light', 'Hansa Yellow Light', 'PY3', '#F6E24C', 'semi'],
-  ['ds-hansa-yellow-medium', 'Hansa Yellow Medium', 'PY97', '#F0C93A', 'semi', GOUACHE],
+  ['ds-hansa-yellow-medium', 'Hansa Yellow Medium', 'PY97', '#F0C93A', 'semi'],
   ['ds-hansa-yellow-deep', 'Hansa Yellow Deep', 'PY65', '#E8A318', 'semi'],
   ['ds-nickel-titanate-yellow', 'Nickel Titanate Yellow', 'PY53', '#E8E07A', 'opaque'],
   ['ds-bismuth-vanadate-yellow', 'Bismuth Vanadate Yellow', 'PY184', '#F0D22A', 'opaque'],
@@ -78,7 +79,7 @@ const DANIEL_SMITH: Row[] = [
   ['ds-pyrrol-scarlet', 'Pyrrol Scarlet', 'PR255', '#E23A28', 'semi'],
   ['ds-organic-vermilion', 'Organic Vermilion', 'PR188', '#E04532', 'semi'],
   ['ds-quinacridone-coral', 'Quinacridone Coral', 'PR209', '#E0564A', 'transparent'],
-  ['ds-pyrrol-red', 'Pyrrol Red', 'PR254', '#D42B2B', 'semi', GOUACHE],
+  ['ds-pyrrol-red', 'Pyrrol Red', 'PR254', '#D42B2B', 'semi'],
   ['ds-cadmium-red-medium-hue', 'Cadmium Red Medium Hue', 'PR108', '#E03C28', 'opaque'],
   ['ds-permanent-alizarin-crimson', 'Permanent Alizarin Crimson', 'PR177', '#8E1D32', 'transparent'],
   ['ds-alizarin-crimson', 'Alizarin Crimson', 'PR83', '#9B1B32', 'transparent'],
@@ -98,7 +99,7 @@ const DANIEL_SMITH: Row[] = [
   ['ds-wisteria', 'Wisteria', 'PW6 + PV15 + PB29', '#B8A0C8', 'opaque'],
   ['ds-lavender', 'Lavender', 'PW6 + PV15 + PB29', '#8A8AB8', 'opaque'],
   ['ds-rose-of-ultramarine', 'Rose of Ultramarine', 'PV15 + PB29', '#7A4A8A', 'semi'],
-  ['ds-ultramarine-blue', 'Ultramarine Blue', 'PB29', '#3A4EA0', 'semi', GOUACHE],
+  ['ds-ultramarine-blue', 'Ultramarine Blue', 'PB29', '#3A4EA0', 'semi'],
   ['ds-french-ultramarine', 'French Ultramarine', 'PB29', '#3D4F9F', 'semi'],
   ['ds-cobalt-blue', 'Cobalt Blue', 'PB28', '#2E5FA3', 'semi'],
   ['ds-phthalo-blue-gs', 'Phthalo Blue (Green Shade)', 'PB15:3', '#08457E', 'transparent'],

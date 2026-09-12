@@ -6,7 +6,7 @@ import { MixRecipe } from './components/MixRecipe.tsx'
 import { PaletteEditor } from './components/PaletteEditor.tsx'
 import { TargetPanel } from './components/TargetPanel.tsx'
 import { Brand, Blob, ImageArea, Mark, Page, PaletteArea, RecipeArea, Studio, Tagline, Title, TopBar, TargetArea } from './components/ui.ts'
-import { defaultEnabledIds } from './color/palettes.ts'
+import { defaultEnabledIds, mixPaintIds, paintsForMedium } from './color/palettes.ts'
 import { findRecipes } from './color/solve.ts'
 import { suggestPaintsForColours } from './color/suggest.ts'
 import type { MakerFilter, Medium, Paint } from './color/types.ts'
@@ -34,7 +34,11 @@ export default function App() {
   const [maker, setMaker] = useState<MakerFilter>(INITIAL?.maker ?? 'all')
   const [matchingPalette, setMatchingPalette] = useState(false)
   const enabledIds = enabled[medium]
-  const mixIdentity = `${targetHex}|${medium}|${enabledIds.join(',')}`
+  const mixIds = useMemo(
+    () => mixPaintIds(medium, enabledIds, maker, customPaints),
+    [customPaints, enabledIds, maker, medium],
+  )
+  const mixIdentity = `${targetHex}|${medium}|${maker}|${mixIds.join(',')}`
   const [recipeSelection, setRecipeSelection] = useState({ key: mixIdentity, index: 0 })
   if (recipeSelection.key !== mixIdentity) {
     setRecipeSelection({ key: mixIdentity, index: 0 })
@@ -43,8 +47,8 @@ export default function App() {
   const canPickFromScreen = typeof window !== 'undefined' && 'EyeDropper' in window
 
   const recipes = useMemo(
-    () => findRecipes(targetHex, enabledIds, medium, 3, customPaints),
-    [targetHex, enabledIds, medium, customPaints],
+    () => findRecipes(targetHex, mixIds, medium, 3, customPaints),
+    [targetHex, mixIds, medium, customPaints],
   )
 
   useEffect(() => {
@@ -54,6 +58,17 @@ export default function App() {
   function setTarget(hex: string) {
     setTargetHex(hex)
     setHexDraft(hex)
+  }
+
+  function changeMaker(next: MakerFilter) {
+    setMaker(next)
+    if (next === 'all' || next === 'custom') return
+    const makerIds = paintsForMedium(medium, customPaints)
+      .filter((paint) => paint.maker === next)
+      .map((paint) => paint.id)
+    if (makerIds.length === 0) return
+    const anyOn = makerIds.some((id) => enabled[medium].includes(id))
+    if (!anyOn) enableIds(makerIds, 'add')
   }
 
   function togglePaint(id: string) {
@@ -162,7 +177,7 @@ export default function App() {
             customPaints={customPaints}
             targetHex={targetHex}
             maker={maker}
-            onMakerChange={setMaker}
+            onMakerChange={changeMaker}
             onToggle={togglePaint}
             onEnableIds={enableIds}
             onReset={() =>

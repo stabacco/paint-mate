@@ -1,5 +1,5 @@
 import { CATALOGUE_PAINTS } from './catalog.ts'
-import type { Maker, Medium, Paint } from './types.ts'
+import type { Maker, MakerFilter, Medium, Paint } from './types.ts'
 
 export const PAINTS: Paint[] = CATALOGUE_PAINTS
 
@@ -132,6 +132,21 @@ export const PALETTE_SETS: PaletteSet[] = [
 
 export function paintsForMedium(medium: Medium, extra: Paint[] = []): Paint[] {
   return [...PAINTS, ...extra].filter((paint) => paint.mediums.includes(medium))
+}
+
+export function mixPaintIds(
+  medium: Medium,
+  enabledIds: readonly string[],
+  maker: MakerFilter,
+  extra: Paint[] = [],
+): string[] {
+  const catalogue = paintsForMedium(medium, extra)
+  if (maker === 'all') {
+    return enabledIds.filter((id) => catalogue.some((paint) => paint.id === id))
+  }
+  const makerIds = catalogue.filter((paint) => paint.maker === maker).map((paint) => paint.id)
+  const enabledFromMaker = enabledIds.filter((id) => makerIds.includes(id))
+  return enabledFromMaker.length > 0 ? enabledFromMaker : makerIds
 }
 
 export function defaultEnabledIds(medium: Medium): string[] {

@@ -174,8 +174,9 @@ export function PaletteEditor({
       <Eyebrow>Your palette</Eyebrow>
       <CardTitle>Which tubes are on the table?</CardTitle>
       <Note>
-        {enabledIds.length} active of {paints.length} in the catalogue. Mixes only use the ones you
-        leave on. Daniel Smith and Winsor & Newton lists follow colours stocked at{' '}
+        {enabledIds.length} active of {paints.length} in the catalogue. Mixes use the{' '}
+        {maker === 'all' ? 'tubes you leave on' : `${MAKER_LABELS[maker as Maker]} tubes you leave on`}
+        . Daniel Smith and Winsor & Newton lists follow colours stocked at{' '}
         <ShopLink href="https://seniorart.com.au" target="_blank" rel="noreferrer">
           Senior Art Supplies
         </ShopLink>
@@ -315,7 +316,17 @@ export function PaletteEditor({
           </Pan>
         ))}
       </Grid>
-      {visible.length === 0 ? <Note>No colours match that search.</Note> : null}
+      {visible.length === 0 ? (
+        <Note>
+          {query.trim()
+            ? 'No colours match that search.'
+            : maker === 'custom'
+              ? 'Add a colour to keep tubes that are not in the catalogue.'
+              : maker === 'all'
+                ? 'No colours match that search.'
+                : `No ${MAKER_LABELS[maker]} tubes are listed for ${medium}.`}
+        </Note>
+      ) : null}
       <Note>
         Defaults for this medium: {defaults.length} studio staples. Your selection and custom
         colours are saved on this device.
