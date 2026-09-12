@@ -1,0 +1,208 @@
+import styled from 'styled-components'
+import { contrastInk } from '../color/convert.ts'
+import { describeWash, toPartsRatio, toPercents } from '../color/mix.ts'
+import { PAINTS_BY_ID } from '../color/palettes.ts'
+import { hueHint, matchQuality } from '../color/solve.ts'
+import type { Medium, Recipe } from '../color/types.ts'
+import { Button, Card, CardTitle, Eyebrow, Note, Row } from './ui.ts'
+
+const Compare = styled.section`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+`
+
+const Swatch = styled.section<{ $color: string }>`
+  min-height: 6.2rem;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.18), transparent 40%),
+    ${({ $color }) => $color};
+  color: ${({ $color }) => contrastInk($color)};
+  display: grid;
+  align-content: end;
+  padding: 0.8rem;
+  box-shadow: inset 0 0 0 1px rgba(28, 22, 18, 0.1);
+
+  small {
+    opacity: 0.8;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: ${({ theme }) => theme.fontDisplay};
+    font-size: 1.15rem;
+  }
+`
+
+const Quality = styled.p`
+  margin: 0 0 0.9rem;
+  font-weight: 650;
+`
+
+const MixList = styled.ol`
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+`
+
+const MixItem = styled.li`
+  display: grid;
+  grid-template-columns: 2.6rem 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+`
+
+const Dot = styled.i<{ $color: string }>`
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  box-shadow: inset 0 0 0 1px rgba(28, 22, 18, 0.15);
+  display: block;
+`
+
+const PaintMeta = styled.section`
+  display: grid;
+
+  strong {
+    font-size: 0.98rem;
+  }
+
+  small {
+    color: ${({ theme }) => theme.inkMuted};
+  }
+`
+
+const Amount = styled.strong`
+  font-family: ${({ theme }) => theme.fontDisplay};
+  font-size: 1.35rem;
+`
+
+const Alt = styled.button<{ $active: boolean }>`
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.28rem;
+  border-radius: 999px;
+  border: 1px solid ${({ theme, $active }) => ($active ? theme.ink : theme.line)};
+  background: ${({ theme }) => theme.paper};
+`
+
+const Chip = styled.i<{ $color: string }>`
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  display: block;
+`
+
+const mediumLabel: Record<Medium, string> = {
+  watercolour: 'watercolour',
+  gouache: 'gouache',
+  acrylic: 'acrylic',
+  oil: 'oil',
+}
+
+type MixRecipeProps = {
+  targetHex: string
+  medium: Medium
+  recipes: Recipe[]
+  selected: number
+  onSelect: (index: number) => void
+}
+
+export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: MixRecipeProps) {
+  const recipe = recipes[selected]
+  if (!recipe) {
+    return (
+      <Card>
+        <Eyebrow>Mix</Eyebrow>
+        <CardTitle>Turn on some paints first</CardTitle>
+        <Note>Select at least one colour from your palette to get a mix recipe.</Note>
+      </Card>
+    )
+  }
+
+  const percents = toPercents(recipe.parts.map((part) => part.weight))
+  const ratio = toPartsRatio(percents)
+  const quality = matchQuality(recipe.deltaE)
+  const wash = medium === 'watercolour' ? describeWash(recipe.water) : null
+  const copy = recipe.parts
+    .map((part, index) => `${percents[index]}% ${PAINTS_BY_ID.get(part.paintId)?.name ?? part.paintId}`)
+    .join(', ')
+
+  return (
+    <Card>
+      <Eyebrow>{mediumLabel[medium]} mix</Eyebrow>
+      <CardTitle>Recipe for a {hueHint(targetHex)} colour</CardTitle>
+      <Compare>
+        <Swatch $color={targetHex}>
+          <small>Target</small>
+          <strong>{targetHex}</strong>
+        </Swatch>
+        <Swatch $color={recipe.mixedHex}>
+          <small>Your mix</small>
+          <strong>{recipe.mixedHex}</strong>
+        </Swatch>
+      </Compare>
+      <Quality>
+        {quality.label}
+        <Note as="span"> — {quality.detail}</Note>
+      </Quality>
+      <MixList>
+        {recipe.parts.map((part, index) => {
+          const paint = PAINTS_BY_ID.get(part.paintId)
+          if (!paint) return null
+          return (
+            <MixItem key={paint.id}>
+              <Dot $color={paint.hex} />
+              <PaintMeta>
+                <strong>{paint.name}</strong>
+                <small>
+                  {paint.pigment}
+                  {ratio[index] ? ` · ${ratio[index]} part${ratio[index] === 1 ? '' : 's'}` : ''}
+                </small>
+              </PaintMeta>
+              <Amount>{percents[index]}%</Amount>
+            </MixItem>
+          )
+        })}
+      </MixList>
+      {wash ? <Note>Lay it as {wash} so the paper helps lift the value.</Note> : null}
+      <Row>
+        <Button
+          type="button"
+          $variant="ghost"
+          onClick={() => void navigator.clipboard.writeText(copy)}
+        >
+          Copy recipe
+        </Button>
+        {recipes.length > 1 ? (
+          <Row as="span">
+            {recipes.map((item, index) => (
+              <Alt
+                key={`${item.mixedHex}-${index}`}
+                type="button"
+                $active={index === selected}
+                onClick={() => onSelect(index)}
+                aria-label={`Alternative mix ${index + 1}`}
+              >
+                {item.parts.map((part) => (
+                  <Chip
+                    key={part.paintId}
+                    $color={PAINTS_BY_ID.get(part.paintId)?.hex ?? '#ccc'}
+                  />
+                ))}
+              </Alt>
+            ))}
+          </Row>
+        ) : null}
+      </Row>
+    </Card>
+  )
+}
