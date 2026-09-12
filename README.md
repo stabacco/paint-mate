@@ -15,15 +15,16 @@ yarn dev
 
 Live site: `https://stabacco.github.io/paint-mate/`
 
-**One-time setup (repo owner, in the browser):**
+Pushes to `main` build the app and publish the `gh-pages` branch.
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
-3. Save. If Pages was never turned on, this step cannot be done from the workflow.
+**One-time setup (repo owner):**
 
-Then either push to `main`, or run **Actions → Deploy GitHub Pages → Run workflow**.
+1. Wait for the first green **Deploy GitHub Pages** run on `main` (it creates the `gh-pages` branch).
+2. Open **Settings → Pages**.
+3. Under **Build and deployment**, choose **Deploy from a branch**.
+4. Branch **gh-pages**, folder **/ (root)**. Save.
 
-If a deploy fails, start a **new** workflow run. Do not re-run only the failed job — that uploads a second `github-pages` artifact and breaks deploy.
+Later pushes to `main` update the site automatically.
 
 ## What it does
 
