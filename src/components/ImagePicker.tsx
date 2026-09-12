@@ -397,6 +397,18 @@ export function ImagePicker({ onPick, maker, matching = false, onSelectPalette }
               ? 'Select palette from this photo'
               : `Select ${MAKER_LABELS[maker]} palette from this photo`}
         </Button>
+        {matchedCount != null && matchedCount > 0 ? (
+          <Note>
+            Turned on {matchedCount} {maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]} tube
+            {matchedCount === 1 ? '' : 's'} in the palette below.
+          </Note>
+        ) : (
+          <Note>
+            {hasImage
+              ? `Uses the colours in this photo and the ${maker === 'all' ? 'full catalogue' : MAKER_LABELS[maker]} tubes.`
+              : `After a photo is loaded, this chooses the ${maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]} tubes needed to mix the colours in it.`}
+          </Note>
+        )}
       </Row>
       {foundHexes.length > 0 ? (
         <Found>
@@ -412,17 +424,6 @@ export function ImagePicker({ onPick, maker, matching = false, onSelectPalette }
             />
           ))}
         </Found>
-      ) : (
-        <Note>
-          After a photo is loaded, this chooses the {maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]}{' '}
-          tubes needed to mix the colours in it.
-        </Note>
-      )}
-      {matchedCount != null && matchedCount > 0 ? (
-        <Note>
-          Turned on {matchedCount} {maker === 'all' ? 'catalogue' : MAKER_LABELS[maker]} tube
-          {matchedCount === 1 ? '' : 's'} in the palette below.
-        </Note>
       ) : null}
     </Card>
   )
