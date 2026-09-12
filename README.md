@@ -18,6 +18,6 @@ To try it on a phone, the repo can publish to GitHub Pages from `main` (Settings
 - **Target a colour** with hex, a colour picker, the optional screen eyedropper, or a photo
 - **Load images** from a URL (with a CORS proxy fallback) or from a file
 - **Decompose** the target into 1–3 painterly pigments using subtractive Kubelka–Munk mixing
-- **Keep a palette per medium**, with common defaults and local persistence
+Catalogue colours follow Daniel Smith Extra Fine and Winsor & Newton Professional ranges stocked at [Senior Art Supplies](https://seniorart.com.au). Filter the palette by maker, load a mixing set, or add a tube that is not listed yet.
 
 Mixes are estimates. Real tubes, paper and binders vary — use the recipe as a starting point and adjust by eye.

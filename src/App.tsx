@@ -6,9 +6,9 @@ import { MixRecipe } from './components/MixRecipe.tsx'
 import { PaletteEditor } from './components/PaletteEditor.tsx'
 import { TargetPanel } from './components/TargetPanel.tsx'
 import { Brand, Blob, ImageArea, Mark, Page, PaletteArea, RecipeArea, Studio, Tagline, Title, TopBar, TargetArea } from './components/ui.ts'
-import { defaultEnabledIds, paintsForMedium } from './color/palettes.ts'
+import { defaultEnabledIds } from './color/palettes.ts'
 import { findRecipes } from './color/solve.ts'
-import type { Medium } from './color/types.ts'
+import type { Medium, Paint } from './color/types.ts'
 import { loadState, saveState } from './storage.ts'
 
 const Foot = styled.footer`
@@ -29,6 +29,7 @@ export default function App() {
     acrylic: INITIAL?.enabled?.acrylic ?? defaultEnabledIds('acrylic'),
     oil: INITIAL?.enabled?.oil ?? defaultEnabledIds('oil'),
   }))
+  const [customPaints, setCustomPaints] = useState<Paint[]>(INITIAL?.customPaints ?? [])
   const enabledIds = enabled[medium]
   const mixIdentity = `${targetHex}|${medium}|${enabledIds.join(',')}`
   const [recipeSelection, setRecipeSelection] = useState({ key: mixIdentity, index: 0 })
@@ -39,13 +40,13 @@ export default function App() {
   const canPickFromScreen = typeof window !== 'undefined' && 'EyeDropper' in window
 
   const recipes = useMemo(
-    () => findRecipes(targetHex, enabledIds, medium, 3),
-    [targetHex, enabledIds, medium],
+    () => findRecipes(targetHex, enabledIds, medium, 3, customPaints),
+    [targetHex, enabledIds, medium, customPaints],
   )
 
   useEffect(() => {
-    saveState({ medium, targetHex, enabled })
-  }, [medium, targetHex, enabled])
+    saveState({ medium, targetHex, enabled, customPaints })
+  }, [medium, targetHex, enabled, customPaints])
 
   function setTarget(hex: string) {
     setTargetHex(hex)
@@ -58,6 +59,30 @@ export default function App() {
       const next = list.includes(id) ? list.filter((item) => item !== id) : [...list, id]
       return { ...current, [medium]: next }
     })
+  }
+
+  function enableIds(ids: string[], mode: 'add' | 'replace') {
+    setEnabled((current) => {
+      if (mode === 'replace') return { ...current, [medium]: ids }
+      const merged = [...current[medium]]
+      for (const id of ids) {
+        if (!merged.includes(id)) merged.push(id)
+      }
+      return { ...current, [medium]: merged }
+    })
+  }
+
+  function addCustom(paint: Paint) {
+    setCustomPaints((current) => [...current, paint])
+    enableIds([paint.id], 'add')
+  }
+
+  function removeCustom(id: string) {
+    setCustomPaints((current) => current.filter((paint) => paint.id !== id))
+    setEnabled((current) => ({
+      ...current,
+      [medium]: current[medium].filter((item) => item !== id),
+    }))
   }
 
   async function pickFromScreen() {
@@ -103,6 +128,7 @@ export default function App() {
             medium={medium}
             recipes={recipes}
             selected={selectedRecipe}
+            extraPaints={customPaints}
             onSelect={(index) => setRecipeSelection({ key: mixIdentity, index })}
           />
         </RecipeArea>
@@ -113,16 +139,15 @@ export default function App() {
           <PaletteEditor
             medium={medium}
             enabledIds={enabledIds}
+            customPaints={customPaints}
+            targetHex={targetHex}
             onToggle={togglePaint}
+            onEnableIds={enableIds}
             onReset={() =>
               setEnabled((current) => ({ ...current, [medium]: defaultEnabledIds(medium) }))
             }
-            onAll={() =>
-              setEnabled((current) => ({
-                ...current,
-                [medium]: paintsForMedium(medium).map((paint) => paint.id),
-              }))
-            }
+            onAddCustom={addCustom}
+            onRemoveCustom={removeCustom}
           />
         </PaletteArea>
       </Studio>

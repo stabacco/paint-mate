@@ -88,4 +88,16 @@ describe('solver', () => {
     expect(toPercents([0.6, 0.4]).reduce((a, b) => a + b, 0)).toBe(100)
     expect(toPartsRatio([60, 40])).toEqual([3, 2])
   })
+
+  it('keeps catalogue ids unique and still finds a tube colour in a large palette', () => {
+    const ids = [...PAINTS_BY_ID.keys()]
+    expect(new Set(ids).size).toBe(ids.length)
+    const watercolourIds = [...PAINTS_BY_ID.values()]
+      .filter((item) => item.mediums.includes('watercolour'))
+      .map((item) => item.id)
+    const started = performance.now()
+    const recipes = findRecipes('#8F4B2E', watercolourIds, 'watercolour')
+    expect(performance.now() - started).toBeLessThan(800)
+    expect(recipes[0]?.deltaE).toBeLessThan(10)
+  })
 })

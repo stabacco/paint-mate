@@ -1,21 +1,24 @@
 import { hexDeltaE, hexToOklab } from './convert.ts'
 import { mixPaints, resolvePaint, toPercents, type MixablePaint } from './mix.ts'
-import { PAINTS_BY_ID } from './palettes.ts'
-import type { Medium, MixPart, Recipe } from './types.ts'
+import { isWhite, paintLookup } from './palettes.ts'
+import type { Medium, MixPart, Paint, Recipe } from './types.ts'
 
 const TWO_RATIO_STEPS = 19
 const WATER_STEPS = [0, 0.12, 0.24, 0.38, 0.52, 0.66]
 const WHITE_STEPS = [0, 0.12, 0.24, 0.38, 0.52]
+const PAIR_LIMIT = 16
 
 export function findRecipes(
   targetHex: string,
   enabledIds: readonly string[],
   medium: Medium,
   limit = 3,
+  extraPaints: Paint[] = [],
 ): Recipe[] {
+  const lookup = paintLookup(extraPaints)
   const paints = enabledIds
-    .map((id) => PAINTS_BY_ID.get(id))
-    .filter((paint): paint is NonNullable<typeof paint> => Boolean(paint))
+    .map((id) => lookup.get(id))
+    .filter((paint): paint is Paint => Boolean(paint))
     .filter((paint) => paint.mediums.includes(medium))
     .map(resolvePaint)
 
@@ -23,8 +26,9 @@ export function findRecipes(
 
   const candidates: Recipe[] = []
   const usesWater = medium === 'watercolour'
-  const white = paints.find((paint) => paint.id === 'titanium-white' || paint.id === 'chinese-white')
+  const white = paints.find((paint) => isWhite(paint))
   const chromatic = paints.filter((paint) => paint !== white)
+  const mixPool = nearestPaints(chromatic, targetHex, PAIR_LIMIT)
 
   for (const paint of paints) {
     const waters = usesWater ? WATER_STEPS : [0]
@@ -38,10 +42,10 @@ export function findRecipes(
     }
   }
 
-  for (let i = 0; i < chromatic.length; i += 1) {
-    for (let j = i + 1; j < chromatic.length; j += 1) {
-      const a = chromatic[i]
-      const b = chromatic[j]
+  for (let i = 0; i < mixPool.length; i += 1) {
+    for (let j = i + 1; j < mixPool.length; j += 1) {
+      const a = mixPool[i]
+      const b = mixPool[j]
       for (let step = 1; step < TWO_RATIO_STEPS; step += 1) {
         const t = step / TWO_RATIO_STEPS
         const waters = usesWater ? [0, 0.24, 0.46] : [0]
@@ -69,7 +73,7 @@ export function findRecipes(
 
   for (const seed of seeds) {
     const used = new Set(seed.parts.map((part) => part.paintId))
-    for (const extra of chromatic) {
+    for (const extra of mixPool) {
       if (used.has(extra.id)) continue
       const seedPaints = seed.parts
         .map((part) => paints.find((paint) => paint.id === part.paintId))
@@ -88,6 +92,13 @@ export function findRecipes(
   }
 
   return uniqueRecipes(candidates).sort(compareRecipes).slice(0, limit)
+}
+
+function nearestPaints(paints: MixablePaint[], targetHex: string, limit: number): MixablePaint[] {
+  if (paints.length <= limit) return paints
+  return [...paints]
+    .sort((a, b) => hexDeltaE(targetHex, a.hex) - hexDeltaE(targetHex, b.hex))
+    .slice(0, limit)
 }
 
 function pushCandidate(

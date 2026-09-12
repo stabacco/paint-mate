@@ -1,9 +1,9 @@
 import styled from 'styled-components'
 import { contrastInk } from '../color/convert.ts'
 import { describeWash, toPartsRatio, toPercents } from '../color/mix.ts'
-import { PAINTS_BY_ID } from '../color/palettes.ts'
+import { paintLookup } from '../color/palettes.ts'
 import { hueHint, matchQuality } from '../color/solve.ts'
-import type { Medium, Recipe } from '../color/types.ts'
+import { MAKER_LABELS, type Medium, type Paint, type Recipe } from '../color/types.ts'
 import { Button, Card, CardTitle, Eyebrow, Note, Row } from './ui.ts'
 
 const Compare = styled.section`
@@ -113,10 +113,19 @@ type MixRecipeProps = {
   medium: Medium
   recipes: Recipe[]
   selected: number
+  extraPaints?: Paint[]
   onSelect: (index: number) => void
 }
 
-export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: MixRecipeProps) {
+export function MixRecipe({
+  targetHex,
+  medium,
+  recipes,
+  selected,
+  extraPaints = [],
+  onSelect,
+}: MixRecipeProps) {
+  const lookup = paintLookup(extraPaints)
   const recipe = recipes[selected]
   if (!recipe) {
     return (
@@ -133,7 +142,7 @@ export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: Mi
   const quality = matchQuality(recipe.deltaE)
   const wash = medium === 'watercolour' ? describeWash(recipe.water) : null
   const copy = recipe.parts
-    .map((part, index) => `${percents[index]}% ${PAINTS_BY_ID.get(part.paintId)?.name ?? part.paintId}`)
+    .map((part, index) => `${percents[index]}% ${lookup.get(part.paintId)?.name ?? part.paintId}`)
     .join(', ')
 
   return (
@@ -156,7 +165,7 @@ export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: Mi
       </Quality>
       <MixList>
         {recipe.parts.map((part, index) => {
-          const paint = PAINTS_BY_ID.get(part.paintId)
+          const paint = lookup.get(part.paintId)
           if (!paint) return null
           return (
             <MixItem key={paint.id}>
@@ -164,7 +173,7 @@ export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: Mi
               <PaintMeta>
                 <strong>{paint.name}</strong>
                 <small>
-                  {paint.pigment}
+                  {MAKER_LABELS[paint.maker]} · {paint.pigment}
                   {ratio[index] ? ` · ${ratio[index]} part${ratio[index] === 1 ? '' : 's'}` : ''}
                 </small>
               </PaintMeta>
@@ -195,7 +204,7 @@ export function MixRecipe({ targetHex, medium, recipes, selected, onSelect }: Mi
                 {item.parts.map((part) => (
                   <Chip
                     key={part.paintId}
-                    $color={PAINTS_BY_ID.get(part.paintId)?.hex ?? '#ccc'}
+                    $color={lookup.get(part.paintId)?.hex ?? '#ccc'}
                   />
                 ))}
               </Alt>

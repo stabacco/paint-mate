@@ -1,7 +1,20 @@
+import { useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { defaultEnabledIds, paintsForMedium } from '../color/palettes.ts'
-import type { Medium } from '../color/types.ts'
-import { Button, Card, CardTitle, Eyebrow, Note, Row } from './ui.ts'
+import { isValidHex, normaliseHex } from '../color/convert.ts'
+import {
+  PALETTE_SETS,
+  defaultEnabledIds,
+  paintsForMedium,
+} from '../color/palettes.ts'
+import {
+  MAKER_LABELS,
+  MAKER_SHOPS,
+  MAKERS,
+  type Maker,
+  type Medium,
+  type Paint,
+} from '../color/types.ts'
+import { Button, Card, CardTitle, Eyebrow, Field, Note, Row, TextInput } from './ui.ts'
 
 const Grid = styled.section`
   display: grid;
@@ -17,11 +30,12 @@ const Pan = styled.button<{ $color: string; $on: boolean }>`
   padding: 0.55rem;
   background: ${({ theme }) => theme.paper};
   display: grid;
-  gap: 0.4rem;
+  gap: 0.35rem;
   justify-items: stretch;
   opacity: ${({ $on }) => ($on ? 1 : 0.46)};
   text-align: left;
   touch-action: manipulation;
+  position: relative;
 `
 
 const Well = styled.i<{ $color: string }>`
@@ -44,42 +58,231 @@ const Code = styled.small`
   font-size: 0.7rem;
 `
 
+const Chip = styled.button<{ $active: boolean }>`
+  border: 1px solid ${({ theme, $active }) => ($active ? theme.ink : theme.line)};
+  background: ${({ theme, $active }) => ($active ? theme.ink : theme.surface)};
+  color: ${({ theme, $active }) => ($active ? theme.paper : theme.ink)};
+  border-radius: 999px;
+  min-height: 2.4rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  touch-action: manipulation;
+`
+
+const ShopLink = styled.a`
+  color: ${({ theme }) => theme.navy};
+  font-weight: 650;
+`
+
+const AddForm = styled.section`
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px dashed ${({ theme }) => theme.line};
+  border-radius: 16px;
+  background: ${({ theme }) => theme.paper};
+`
+
+const Remove = styled.button`
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.surface};
+  color: ${({ theme }) => theme.ink};
+  font-size: 1rem;
+  line-height: 1;
+`
+
 type PaletteEditorProps = {
   medium: Medium
   enabledIds: string[]
+  customPaints: Paint[]
+  targetHex: string
   onToggle: (id: string) => void
+  onEnableIds: (ids: string[], mode: 'add' | 'replace') => void
   onReset: () => void
-  onAll: () => void
+  onAddCustom: (paint: Paint) => void
+  onRemoveCustom: (id: string) => void
 }
 
 export function PaletteEditor({
   medium,
   enabledIds,
+  customPaints,
+  targetHex,
   onToggle,
+  onEnableIds,
   onReset,
-  onAll,
+  onAddCustom,
+  onRemoveCustom,
 }: PaletteEditorProps) {
+  const [maker, setMaker] = useState<Maker | 'all'>('all')
+  const [query, setQuery] = useState('')
+  const [adding, setAdding] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftHex, setDraftHex] = useState(targetHex)
+  const [draftPigment, setDraftPigment] = useState('')
   const enabled = new Set(enabledIds)
-  const paints = paintsForMedium(medium)
+  const paints = paintsForMedium(medium, customPaints)
+  const sets = PALETTE_SETS.filter((set) => set.medium === medium).filter(
+    (set) => maker === 'all' || set.maker === maker,
+  )
+
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return paints.filter((paint) => {
+      if (maker !== 'all' && paint.maker !== maker) return false
+      if (!needle) return true
+      return `${paint.name} ${paint.pigment} ${MAKER_LABELS[paint.maker]}`
+        .toLowerCase()
+        .includes(needle)
+    })
+  }, [maker, paints, query])
+
+  const shop = maker === 'all' ? null : MAKER_SHOPS[maker]
   const defaults = defaultEnabledIds(medium)
+
+  function submitCustom() {
+    if (!draftName.trim() || !isValidHex(draftHex)) return
+    onAddCustom({
+      id: `custom-${Date.now().toString(36)}`,
+      name: draftName.trim(),
+      pigment: draftPigment.trim() || 'custom',
+      hex: normaliseHex(draftHex),
+      opacity: 'semi',
+      scattering: 0.48,
+      mediums: [medium],
+      maker: 'custom',
+    })
+    setDraftName('')
+    setDraftPigment('')
+    setAdding(false)
+    setMaker('custom')
+  }
 
   return (
     <Card>
       <Eyebrow>Your palette</Eyebrow>
       <CardTitle>Which tubes are on the table?</CardTitle>
       <Note>
-        {enabledIds.length} of {paints.length} paints active. Mixes only use the ones you leave on.
+        {enabledIds.length} active of {paints.length} in the catalogue. Mixes only use the ones you
+        leave on. Daniel Smith and Winsor & Newton lists follow colours stocked at{' '}
+        <ShopLink href="https://seniorart.com.au" target="_blank" rel="noreferrer">
+          Senior Art Supplies
+        </ShopLink>
+        .
       </Note>
+      <Row>
+        <Chip type="button" $active={maker === 'all'} onClick={() => setMaker('all')}>
+          All makers
+        </Chip>
+        {MAKERS.map((id) => (
+          <Chip key={id} type="button" $active={maker === id} onClick={() => setMaker(id)}>
+            {MAKER_LABELS[id]}
+          </Chip>
+        ))}
+      </Row>
+      {shop ? (
+        <Note>
+          Browse {MAKER_LABELS[maker as Maker]} at{' '}
+          <ShopLink href={shop.url} target="_blank" rel="noreferrer">
+            {shop.label}
+          </ShopLink>
+          .
+        </Note>
+      ) : null}
+      <Field>
+        Search colours
+        <TextInput
+          value={query}
+          placeholder="Hansa, quinacridone, PB29…"
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </Field>
       <Row>
         <Button type="button" $variant="tiny" onClick={onReset}>
           Common defaults
         </Button>
-        <Button type="button" $variant="tiny" onClick={onAll}>
-          Use all
+        <Button
+          type="button"
+          $variant="tiny"
+          onClick={() => onEnableIds(visible.map((paint) => paint.id), 'add')}
+        >
+          Enable visible
+        </Button>
+        <Button
+          type="button"
+          $variant="tiny"
+          onClick={() =>
+            onEnableIds(
+              enabledIds.filter((id) => !visible.some((paint) => paint.id === id)),
+              'replace',
+            )
+          }
+        >
+          Clear visible
+        </Button>
+        <Button type="button" $variant="tiny" onClick={() => {
+          setDraftHex(targetHex)
+          setAdding((value) => !value)
+        }}>
+          {adding ? 'Cancel' : 'Add a colour'}
         </Button>
       </Row>
+      {sets.length > 0 ? (
+        <Row>
+          {sets.map((set) => (
+            <Button
+              key={set.id}
+              type="button"
+              $variant="tiny"
+              onClick={() => onEnableIds(set.ids, 'add')}
+            >
+              Add {set.name}
+            </Button>
+          ))}
+        </Row>
+      ) : null}
+      {adding ? (
+        <AddForm>
+          <Field>
+            Tube name
+            <TextInput
+              value={draftName}
+              placeholder="Daniel Smith Lunar Violet"
+              onChange={(event) => setDraftName(event.target.value)}
+            />
+          </Field>
+          <Row>
+            <Field>
+              Hex
+              <TextInput
+                value={draftHex}
+                onChange={(event) => setDraftHex(event.target.value)}
+              />
+            </Field>
+            <Field>
+              Pigment
+              <TextInput
+                value={draftPigment}
+                placeholder="PV23"
+                onChange={(event) => setDraftPigment(event.target.value)}
+              />
+            </Field>
+          </Row>
+          <Button type="button" onClick={submitCustom} disabled={!draftName.trim()}>
+            Save to my colours
+          </Button>
+          <Note>Uses the current medium ({medium}). Hex can match the target swatch above.</Note>
+        </AddForm>
+      ) : null}
       <Grid>
-        {paints.map((paint) => (
+        {visible.map((paint) => (
           <Pan
             key={paint.id}
             type="button"
@@ -90,13 +293,28 @@ export function PaletteEditor({
           >
             <Well $color={paint.hex} />
             <Name>{paint.name}</Name>
-            <Code>{paint.pigment}</Code>
+            <Code>
+              {MAKER_LABELS[paint.maker]} · {paint.pigment}
+            </Code>
+            {paint.maker === 'custom' ? (
+              <Remove
+                type="button"
+                aria-label={`Remove ${paint.name}`}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onRemoveCustom(paint.id)
+                }}
+              >
+                ×
+              </Remove>
+            ) : null}
           </Pan>
         ))}
       </Grid>
+      {visible.length === 0 ? <Note>No colours match that search.</Note> : null}
       <Note>
-        Defaults for this medium: {defaults.length} common studio colours. Your selection is saved
-        on this device.
+        Defaults for this medium: {defaults.length} studio staples. Your selection and custom
+        colours are saved on this device.
       </Note>
     </Card>
   )

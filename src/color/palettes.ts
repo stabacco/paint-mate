@@ -1,250 +1,7 @@
-import type { Medium, Paint } from './types.ts'
+import { CATALOGUE_PAINTS } from './catalog.ts'
+import type { Maker, Medium, Paint } from './types.ts'
 
-export const PAINTS: Paint[] = [
-  {
-    id: 'hansa-yellow',
-    name: 'Hansa Yellow',
-    pigment: 'PY3',
-    hex: '#F4D24A',
-    opacity: 'semi',
-    scattering: 0.42,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'cadmium-yellow',
-    name: 'Cadmium Yellow',
-    pigment: 'PY35',
-    hex: '#F0C01A',
-    opacity: 'opaque',
-    scattering: 0.86,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'naples-yellow',
-    name: 'Naples Yellow',
-    pigment: 'PY41',
-    hex: '#E6D08A',
-    opacity: 'opaque',
-    scattering: 0.78,
-    mediums: ['gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'yellow-ochre',
-    name: 'Yellow Ochre',
-    pigment: 'PY43',
-    hex: '#C4963B',
-    opacity: 'opaque',
-    scattering: 0.72,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'raw-sienna',
-    name: 'Raw Sienna',
-    pigment: 'PBr7',
-    hex: '#C4843C',
-    opacity: 'semi',
-    scattering: 0.55,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'cadmium-orange',
-    name: 'Cadmium Orange',
-    pigment: 'PO20',
-    hex: '#E87A2E',
-    opacity: 'opaque',
-    scattering: 0.82,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'cadmium-red',
-    name: 'Cadmium Red',
-    pigment: 'PR108',
-    hex: '#E03C28',
-    opacity: 'opaque',
-    scattering: 0.84,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'pyrrole-red',
-    name: 'Pyrrole Red',
-    pigment: 'PR254',
-    hex: '#D42B2B',
-    opacity: 'opaque',
-    scattering: 0.7,
-    mediums: ['acrylic', 'oil', 'gouache'],
-  },
-  {
-    id: 'alizarin-crimson',
-    name: 'Alizarin Crimson',
-    pigment: 'PR83',
-    hex: '#9B1B32',
-    opacity: 'transparent',
-    scattering: 0.28,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'quinacridone-rose',
-    name: 'Quinacridone Rose',
-    pigment: 'PV19',
-    hex: '#C13B6A',
-    opacity: 'transparent',
-    scattering: 0.3,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'quinacridone-magenta',
-    name: 'Quinacridone Magenta',
-    pigment: 'PR122',
-    hex: '#B01A5B',
-    opacity: 'transparent',
-    scattering: 0.3,
-    mediums: ['watercolour', 'acrylic'],
-  },
-  {
-    id: 'burnt-sienna',
-    name: 'Burnt Sienna',
-    pigment: 'PBr7',
-    hex: '#8F4B2E',
-    opacity: 'semi',
-    scattering: 0.5,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'burnt-umber',
-    name: 'Burnt Umber',
-    pigment: 'PBr7',
-    hex: '#5A3317',
-    opacity: 'semi',
-    scattering: 0.48,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'raw-umber',
-    name: 'Raw Umber',
-    pigment: 'PBr7',
-    hex: '#6E4B2A',
-    opacity: 'semi',
-    scattering: 0.5,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'ultramarine',
-    name: 'Ultramarine Blue',
-    pigment: 'PB29',
-    hex: '#3A4EA0',
-    opacity: 'semi',
-    scattering: 0.4,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'cobalt-blue',
-    name: 'Cobalt Blue',
-    pigment: 'PB28',
-    hex: '#2E5FA3',
-    opacity: 'semi',
-    scattering: 0.58,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'cerulean-blue',
-    name: 'Cerulean Blue',
-    pigment: 'PB35',
-    hex: '#2B8CBA',
-    opacity: 'opaque',
-    scattering: 0.7,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'phthalo-blue',
-    name: 'Phthalo Blue',
-    pigment: 'PB15:3',
-    hex: '#08457E',
-    opacity: 'transparent',
-    scattering: 0.22,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'prussian-blue',
-    name: 'Prussian Blue',
-    pigment: 'PB27',
-    hex: '#0A2F4A',
-    opacity: 'transparent',
-    scattering: 0.26,
-    mediums: ['watercolour', 'acrylic', 'oil'],
-  },
-  {
-    id: 'phthalo-green',
-    name: 'Phthalo Green',
-    pigment: 'PG7',
-    hex: '#0B6B54',
-    opacity: 'transparent',
-    scattering: 0.24,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'viridian',
-    name: 'Viridian',
-    pigment: 'PG18',
-    hex: '#3F7F6E',
-    opacity: 'transparent',
-    scattering: 0.32,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'sap-green',
-    name: 'Sap Green',
-    pigment: 'PG8',
-    hex: '#4C7A2F',
-    opacity: 'semi',
-    scattering: 0.4,
-    mediums: ['watercolour', 'gouache', 'oil'],
-  },
-  {
-    id: 'dioxazine-purple',
-    name: 'Dioxazine Purple',
-    pigment: 'PV23',
-    hex: '#4A2A6A',
-    opacity: 'transparent',
-    scattering: 0.28,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'paynes-gray',
-    name: "Payne's Gray",
-    pigment: 'PB29 + PBk9',
-    hex: '#3E4A56',
-    opacity: 'semi',
-    scattering: 0.36,
-    mediums: ['watercolour', 'gouache', 'acrylic'],
-  },
-  {
-    id: 'ivory-black',
-    name: 'Ivory Black',
-    pigment: 'PBk9',
-    hex: '#1A1A1A',
-    opacity: 'semi',
-    scattering: 0.34,
-    mediums: ['watercolour', 'gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'titanium-white',
-    name: 'Titanium White',
-    pigment: 'PW6',
-    hex: '#F6F3EC',
-    opacity: 'opaque',
-    scattering: 1,
-    mediums: ['gouache', 'acrylic', 'oil'],
-  },
-  {
-    id: 'chinese-white',
-    name: 'Chinese White',
-    pigment: 'PW4',
-    hex: '#F3F0E8',
-    opacity: 'opaque',
-    scattering: 0.92,
-    mediums: ['watercolour', 'gouache'],
-  },
-]
+export const PAINTS: Paint[] = CATALOGUE_PAINTS
 
 export const PAINTS_BY_ID = new Map(PAINTS.map((paint) => [paint.id, paint]))
 
@@ -309,10 +66,82 @@ export const DEFAULT_PALETTES: Record<Medium, string[]> = {
   ],
 }
 
-export function paintsForMedium(medium: Medium): Paint[] {
-  return PAINTS.filter((paint) => paint.mediums.includes(medium))
+export type PaletteSet = {
+  id: string
+  name: string
+  maker: Maker
+  medium: Medium
+  ids: string[]
+}
+
+export const PALETTE_SETS: PaletteSet[] = [
+  {
+    id: 'ds-essentials',
+    name: 'DS Essentials (6)',
+    maker: 'daniel-smith',
+    medium: 'watercolour',
+    ids: [
+      'ds-hansa-yellow-light',
+      'ds-new-gamboge',
+      'ds-quinacridone-rose',
+      'ds-pyrrol-scarlet',
+      'ds-phthalo-blue-gs',
+      'ds-french-ultramarine',
+    ],
+  },
+  {
+    id: 'ds-ultimate-mixing',
+    name: 'DS Ultimate Mixing (15)',
+    maker: 'daniel-smith',
+    medium: 'watercolour',
+    ids: [
+      'ds-buff-titanium',
+      'ds-hansa-yellow-medium',
+      'ds-quinacridone-gold',
+      'ds-pyrrol-scarlet',
+      'ds-permanent-alizarin-crimson',
+      'ds-quinacridone-rose',
+      'ds-ultramarine-blue',
+      'ds-cerulean-blue-chromium',
+      'ds-phthalo-blue-gs',
+      'ds-phthalo-green-bs',
+      'ds-goethite',
+      'ds-burnt-sienna',
+      'ds-indian-red',
+      'ds-raw-umber',
+      'ds-janes-grey',
+    ],
+  },
+  {
+    id: 'wn-split-primary',
+    name: 'W&N split primaries',
+    maker: 'winsor-newton',
+    medium: 'watercolour',
+    ids: [
+      'wn-winsor-lemon',
+      'wn-winsor-yellow-deep',
+      'wn-winsor-red',
+      'wn-permanent-rose',
+      'wn-french-ultramarine',
+      'wn-winsor-blue-gs',
+      'wn-burnt-sienna',
+      'wn-yellow-ochre',
+    ],
+  },
+]
+
+export function paintsForMedium(medium: Medium, extra: Paint[] = []): Paint[] {
+  return [...PAINTS, ...extra].filter((paint) => paint.mediums.includes(medium))
 }
 
 export function defaultEnabledIds(medium: Medium): string[] {
   return [...DEFAULT_PALETTES[medium]]
+}
+
+export function paintLookup(extra: Paint[] = []): Map<string, Paint> {
+  return new Map([...PAINTS, ...extra].map((paint) => [paint.id, paint]))
+}
+
+export function isWhite(paint: Paint): boolean {
+  return paint.scattering >= 0.9 || /white/i.test(paint.name)
 }
